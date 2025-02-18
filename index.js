@@ -1,6 +1,5 @@
 import express from "express";
-import path from "path";
-
+import { body, validationResult } from "express-validator";
 const app = express();
 const port = 3000;
 const courses = [
@@ -44,14 +43,26 @@ app.get("/courses/:id", (req, res) => {
 });
 
 // POST route to add a new course
-app.post("/courses", (req, res) => {
-  const newCourse = {
-    id: courses.length ? courses[courses.length - 1].id + 1 : 1,
-    ...req.body,
-  };
-  courses.push(newCourse);
-  res.status(201).json(courses);
-});
+// POST route to add a new course with validation
+app.post(
+  "/courses",
+  [
+    body("title").notEmpty().withMessage("Title is required"),
+    body("price").notEmpty().withMessage("Price is required"),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const newCourse = {
+      id: courses.length ? courses[courses.length - 1].id + 1 : 1,
+      ...req.body,
+    };
+    courses.push(newCourse);
+    res.status(201).json(courses);
+  }
+);
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
