@@ -6,17 +6,19 @@ import {
   updateCourse,
   deleteCourse,
 } from "../controlers/apiControllers.js";
+import { validateCourse } from "../middlewares/validateCourse.js";
+import { validateCourseId } from "../middlewares/validateCourseId.js";
 
 const router = express.Router();
 
 // Group routes for /courses
-router.route("/").get(getAllCourses).post(addCourse);
+router.route("/").get(getAllCourses).post(validateCourse, addCourse);
 
 // Group routes for /courses/:id
 router
   .route("/:id")
-  .get(getCourseById)
-  .patch(updateCourse)
-  .delete(deleteCourse);
+  .get(validateCourseId, getCourseById)
+  .patch(validateCourseId, validateCourse, updateCourse)
+  .delete(validateCourseId, deleteCourse);
 
 export default router;
