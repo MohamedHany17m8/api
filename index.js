@@ -15,6 +15,10 @@ const courses = [
     price: 800,
   },
 ];
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
 // Routes
 app.get("/", (req, res) => {
   res.json(courses);
@@ -27,6 +31,7 @@ app.get("/about", (req, res) => {
 app.get("/contact", (req, res) => {
   res.send("Contact");
 });
+
 // Route to get a specific course by ID
 app.get("/courses/:id", (req, res) => {
   const courseId = +req.params.id;
@@ -37,6 +42,17 @@ app.get("/courses/:id", (req, res) => {
     res.status(404).send("Course not found");
   }
 });
+
+// POST route to add a new course
+app.post("/courses", (req, res) => {
+  const newCourse = {
+    id: courses.length ? courses[courses.length - 1].id + 1 : 1,
+    ...req.body,
+  };
+  courses.push(newCourse);
+  res.status(201).json(courses);
+});
+
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
