@@ -3,9 +3,17 @@ import Course from "../models/course.model.js";
 import { SUCCESS, FAIL, ERROR } from "../utils/httpStatusText.js";
 
 // Get all courses
+// Get all courses with pagination
 export const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find();
+    const { limit = 2, page = 1 } = req.query;
+    const limitValue = parseInt(limit, 10);
+    const pageValue = parseInt(page, 10);
+    const skipValue = (pageValue - 1) * limitValue;
+
+    const courses = await Course.find({}, "-__v")
+      .skip(skipValue)
+      .limit(limitValue);
     res.json({
       status: SUCCESS,
       data: { courses },
@@ -21,7 +29,7 @@ export const getAllCourses = async (req, res) => {
 // Get a specific course by ID
 export const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await Course.findById(req.params.id, "-__v");
     if (course) {
       res.json({
         status: SUCCESS,
@@ -53,7 +61,7 @@ export const addCourse = async (req, res) => {
   const newCourse = new Course(req.body);
   try {
     await newCourse.save();
-    const courses = await Course.find();
+    const courses = await Course.find({}, "-__v");
     res.status(201).json({
       status: SUCCESS,
       data: { courses },
@@ -79,7 +87,7 @@ export const updateCourse = async (req, res) => {
     const updatedCourse = await Course.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, projection: "-__v" }
     );
     if (updatedCourse) {
       res.json({
@@ -103,7 +111,9 @@ export const updateCourse = async (req, res) => {
 // Delete a course by ID
 export const deleteCourse = async (req, res) => {
   try {
-    const deletedCourse = await Course.findByIdAndDelete(req.params.id);
+    const deletedCourse = await Course.findByIdAndDelete(req.params.id, {
+      projection: "-__v",
+    });
     if (deletedCourse) {
       res.json({
         status: SUCCESS,

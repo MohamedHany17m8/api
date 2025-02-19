@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import courseRoutes from "./routes/courseRoutes.js";
 import dotenv from "dotenv";
+import cors from "cors";
+import { SUCCESS, FAIL, ERROR } from "./utils/httpStatusText.js";
 
 dotenv.config();
 
@@ -24,6 +26,9 @@ db.once("open", () => {
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Enable CORS
+app.use(cors());
+
 // Routes
 app.get("/", (req, res) => {
   res.send("Home");
@@ -39,6 +44,14 @@ app.get("/contact", (req, res) => {
 
 // Use course routes
 app.use("/courses", courseRoutes);
+
+// Handler for unavailable routes
+app.all("*", (req, res) => {
+  res.status(404).json({
+    status: ERROR,
+    message: "Resource not found",
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
