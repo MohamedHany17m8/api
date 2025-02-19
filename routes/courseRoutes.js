@@ -6,7 +6,7 @@ import {
   updateCourse,
   deleteCourse,
   deleteAllCourses,
-} from "../controlers/apiControllers.js";
+} from "../controlers/coursesControllers.js";
 import { validateCourse } from "../middlewares/validateCourse.js";
 import { validateCourseId } from "../middlewares/validateCourseId.js";
 

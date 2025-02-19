@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import courseRoutes from "./routes/courseRoutes.js";
+import userRoutes from "./routes/usersRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import { SUCCESS, FAIL, ERROR } from "./utils/httpStatusText.js";
@@ -45,6 +46,9 @@ app.get("/contact", (req, res) => {
 
 // Use course routes
 app.use("/courses", courseRoutes);
+
+// Use user routes
+app.use("/users", userRoutes);
 
 // Handler for unavailable routes
 app.all("*", (req, res, next) => {
