@@ -5,6 +5,7 @@ import {
   addCourse,
   updateCourse,
   deleteCourse,
+  deleteAllCourses,
 } from "../controlers/apiControllers.js";
 import { validateCourse } from "../middlewares/validateCourse.js";
 import { validateCourseId } from "../middlewares/validateCourseId.js";
@@ -12,7 +13,11 @@ import { validateCourseId } from "../middlewares/validateCourseId.js";
 const router = express.Router();
 
 // Group routes for /courses
-router.route("/").get(getAllCourses).post(validateCourse, addCourse);
+router
+  .route("/")
+  .get(getAllCourses)
+  .post(validateCourse, addCourse)
+  .delete(deleteAllCourses); // Add the deleteAllCourses route here;
 
 // Group routes for /courses/:id
 router

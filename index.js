@@ -1,8 +1,25 @@
 import express from "express";
-import router from "./routes/courseRoutes.js";
+import mongoose from "mongoose";
+import courseRoutes from "./routes/courseRoutes.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const port = 3000;
+const url = process.env.MONGODB_URL;
+
+// Connect to MongoDB
+mongoose.connect(url, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+  console.log("Connected to MongoDB");
+});
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -21,7 +38,7 @@ app.get("/contact", (req, res) => {
 });
 
 // Use course routes
-app.use("/courses", router);
+app.use("/courses", courseRoutes);
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
