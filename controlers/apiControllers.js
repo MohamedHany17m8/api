@@ -1,150 +1,75 @@
 import { validationResult } from "express-validator";
 import Course from "../models/course.model.js";
 import { SUCCESS, FAIL, ERROR } from "../utils/httpStatusText.js";
+import asyncWrapper from "../middlewares/asyncWrapper.js";
+import AppError from "../utils/appError.js";
+import AppSuccess from "../utils/appSuccess.js";
 
-// Get all courses
 // Get all courses with pagination
-export const getAllCourses = async (req, res) => {
-  try {
-    const { limit = 2, page = 1 } = req.query;
-    const limitValue = parseInt(limit, 10);
-    const pageValue = parseInt(page, 10);
-    const skipValue = (pageValue - 1) * limitValue;
+export const getAllCourses = asyncWrapper(async (req, res, next) => {
+  const { limit = 2, page = 1 } = req.query;
+  const limitValue = parseInt(limit, 10);
+  const pageValue = parseInt(page, 10);
+  const skipValue = (pageValue - 1) * limitValue;
 
-    const courses = await Course.find({}, "-__v")
-      .skip(skipValue)
-      .limit(limitValue);
-    res.json({
-      status: SUCCESS,
-      data: { courses },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: ERROR,
-      message: err.message,
-    });
-  }
-};
+  const courses = await Course.find({}, "-__v")
+    .skip(skipValue)
+    .limit(limitValue);
+
+  res.json(new AppSuccess({ courses }));
+});
 
 // Get a specific course by ID
-export const getCourseById = async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id, "-__v");
-    if (course) {
-      res.json({
-        status: SUCCESS,
-        data: { course },
-      });
-    } else {
-      res.status(404).json({
-        status: FAIL,
-        data: { message: "Course not found" },
-      });
-    }
-  } catch (err) {
-    res.status(500).json({
-      status: ERROR,
-      message: err.message,
-    });
+export const getCourseById = asyncWrapper(async (req, res, next) => {
+  const course = await Course.findById(req.params.id, "-__v");
+  if (!course) {
+    return next(new AppError("Course not found", 404));
   }
-};
+  res.json(new AppSuccess({ course }));
+});
 
 // Add a new course
-export const addCourse = async (req, res) => {
+export const addCourse = asyncWrapper(async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({
-      status: FAIL,
-      data: errors.array(),
-    });
+    return next(new AppError("Validation failed", 400, errors.array()));
   }
   const newCourse = new Course(req.body);
-  try {
-    await newCourse.save();
-    const courses = await Course.find({}, "-__v");
-    res.status(201).json({
-      status: SUCCESS,
-      data: { courses },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: ERROR,
-      message: err.message,
-    });
-  }
-};
+  await newCourse.save();
+  const courses = await Course.find({}, "-__v");
+  res.status(201).json(new AppSuccess({ courses }));
+});
 
 // Update a course by ID
-export const updateCourse = async (req, res) => {
+export const updateCourse = asyncWrapper(async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({
-      status: FAIL,
-      data: errors.array(),
-    });
+    return next(new AppError("Validation failed", 400, errors.array()));
   }
-  try {
-    const updatedCourse = await Course.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, projection: "-__v" }
-    );
-    if (updatedCourse) {
-      res.json({
-        status: SUCCESS,
-        data: { updatedCourse },
-      });
-    } else {
-      res.status(404).json({
-        status: FAIL,
-        data: { message: "Course not found" },
-      });
-    }
-  } catch (err) {
-    res.status(500).json({
-      status: ERROR,
-      message: err.message,
-    });
+  const updatedCourse = await Course.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true, projection: "-__v" }
+  );
+  if (!updatedCourse) {
+    return next(new AppError("Course not found", 404));
   }
-};
+  res.json(new AppSuccess({ updatedCourse }));
+});
 
 // Delete a course by ID
-export const deleteCourse = async (req, res) => {
-  try {
-    const deletedCourse = await Course.findByIdAndDelete(req.params.id, {
-      projection: "-__v",
-    });
-    if (deletedCourse) {
-      res.json({
-        status: SUCCESS,
-        data: { deletedCourse },
-      });
-    } else {
-      res.status(404).json({
-        status: FAIL,
-        data: { message: "Course not found" },
-      });
-    }
-  } catch (err) {
-    res.status(500).json({
-      status: ERROR,
-      message: err.message,
-    });
+export const deleteCourse = asyncWrapper(async (req, res, next) => {
+  const deletedCourse = await Course.findByIdAndDelete(req.params.id, {
+    projection: "-__v",
+  });
+  if (!deletedCourse) {
+    return next(new AppError("Course not found", 404));
   }
-};
+  res.json(new AppSuccess({ deletedCourse }));
+});
 
 // Delete all courses
-export const deleteAllCourses = async (req, res) => {
-  try {
-    await Course.deleteMany({});
-    res.status(200).json({
-      status: SUCCESS,
-      data: null,
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: ERROR,
-      message: err.message,
-    });
-  }
-};
+export const deleteAllCourses = asyncWrapper(async (req, res, next) => {
+  await Course.deleteMany({});
+  res.status(200).json(new AppSuccess(null));
+});

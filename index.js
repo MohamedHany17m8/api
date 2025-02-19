@@ -4,7 +4,8 @@ import courseRoutes from "./routes/courseRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import { SUCCESS, FAIL, ERROR } from "./utils/httpStatusText.js";
-
+import asyncWrapper from "./middlewares/asyncWrapper.js";
+import AppError from "./utils/appError.js";
 dotenv.config();
 
 const app = express();
@@ -46,10 +47,30 @@ app.get("/contact", (req, res) => {
 app.use("/courses", courseRoutes);
 
 // Handler for unavailable routes
-app.all("*", (req, res) => {
-  res.status(404).json({
-    status: ERROR,
-    message: "Resource not found",
+app.all("*", (req, res, next) => {
+  next(new AppError("Resource not found", 404));
+});
+
+// Middleware to handle invalid ObjectId errors
+app.use((err, req, res, next) => {
+  if (err.name === "CastError" && err.kind === "ObjectId") {
+    return next(new AppError("Invalid ID format", 400));
+  }
+  next(err);
+});
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  const statusCode = err.statusCode || 500;
+  const status = err.status || ERROR;
+  const message = err.message || "Internal Server Error";
+  const data = err.data || null;
+
+  res.status(statusCode).json({
+    status,
+    message,
+    data,
   });
 });
 
