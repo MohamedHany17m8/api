@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import AppError from "../utils/appError.js";
 import AppSuccess from "../utils/appSuccess.js";
 import asyncWrapper from "../middlewares/asyncWrapper.js";
+import generateJwt from "../utils/generateJwt.js";
 
 // Get all users
 export const getAllUsers = asyncWrapper(async (req, res, next) => {
@@ -38,7 +39,11 @@ export const createUser = asyncWrapper(async (req, res, next) => {
 
   const newUser = new User(req.body);
   await newUser.save();
-  res.status(201).json(new AppSuccess({ user: newUser }));
+
+  // Generate JWT token
+  const token = generateJwt({ id: newUser._id });
+
+  res.status(201).json(new AppSuccess({ user: newUser, token }));
 });
 
 // Update a user by ID
@@ -85,17 +90,20 @@ export const loginUser = asyncWrapper(async (req, res, next) => {
   // Check if the user exists
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    return next(new AppError("user not found", 401));
+    return next(new AppError("Invalid email or password", 401));
   }
 
   // Check if the password is correct
   const isPasswordCorrect = await bcrypt.compare(password, user.password);
   if (!isPasswordCorrect) {
-    return next(new AppError("Invalid  password", 401));
+    return next(new AppError("Invalid email or password", 401));
   }
+
+  // Generate JWT token
+  const token = generateJwt({ id: user._id });
 
   // Remove the password from the response
   user.password = undefined;
 
-  res.json(new AppSuccess({ user }));
+  res.json(new AppSuccess({ user, token }));
 });

@@ -13,11 +13,15 @@ import {
   validateUpdateUser,
   validateLoginUser,
 } from "../middlewares/validateUser.js";
+import verifyToken from "../utils/verifyToken.js";
 
 const router = express.Router();
 
 // Routes for /users
-router.route("/").get(getAllUsers).post(validateCreateUser, createUser);
+router
+  .route("/")
+  .get(verifyToken, getAllUsers)
+  .post(validateCreateUser, createUser);
 
 // Routes for /users/:id
 router
