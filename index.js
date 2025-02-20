@@ -12,7 +12,6 @@ import AppError from "./utils/appError.js";
 dotenv.config();
 
 const app = express();
-const port = 3000;
 const url = process.env.MONGODB_URL;
 
 // Connect to MongoDB
@@ -87,6 +86,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
+export default app; // Export the Express app
