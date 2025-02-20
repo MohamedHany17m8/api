@@ -22,6 +22,15 @@ const userSchema = new mongoose.Schema({
     minlength: [8, "Password must be at least 8 characters long"],
     select: false, // Do not return the password field by default
   },
+  role: {
+    type: String,
+    enum: ["admin", "user", "manager"],
+    default: "user",
+  },
+  avatar: {
+    type: String,
+    default: "uploads/profile.png", // Default avatar path
+  },
   createdAt: {
     type: Date,
     default: Date.now,

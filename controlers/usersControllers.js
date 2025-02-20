@@ -41,7 +41,7 @@ export const createUser = asyncWrapper(async (req, res, next) => {
   await newUser.save();
 
   // Generate JWT token
-  const token = generateJwt({ id: newUser._id });
+  const token = generateJwt({ id: newUser._id, role: newUser.role });
 
   res.status(201).json(new AppSuccess({ user: newUser, token }));
 });
@@ -100,8 +100,8 @@ export const loginUser = asyncWrapper(async (req, res, next) => {
   }
 
   // Generate JWT token
-  const token = generateJwt({ id: user._id });
-
+  const token = generateJwt({ id: user._id, role: user.role });
+  console.log(user.role);
   // Remove the password from the response
   user.password = undefined;
 

@@ -14,6 +14,7 @@ import {
   validateLoginUser,
 } from "../middlewares/validateUser.js";
 import verifyToken from "../utils/verifyToken.js";
+import allowedTo from "../utils/allowedTo.js";
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router
   .route("/:id")
   .get(validateUserId, getUserById)
   .patch(validateUpdateUser, updateUser)
-  .delete(validateUserId, deleteUser);
+  .delete(validateUserId, verifyToken, allowedTo("manager"), deleteUser);
 
 // Route for /users/login
 router.post("/login", validateLoginUser, loginUser);
