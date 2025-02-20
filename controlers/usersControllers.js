@@ -38,6 +38,12 @@ export const createUser = asyncWrapper(async (req, res, next) => {
   }
 
   const newUser = new User(req.body);
+
+  // Handle avatar upload
+  if (req.file) {
+    newUser.avatar = req.file.path;
+  }
+
   await newUser.save();
 
   // Generate JWT token
@@ -101,7 +107,7 @@ export const loginUser = asyncWrapper(async (req, res, next) => {
 
   // Generate JWT token
   const token = generateJwt({ id: user._id, role: user.role });
-  console.log(user.role);
+
   // Remove the password from the response
   user.password = undefined;
 

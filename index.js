@@ -4,6 +4,8 @@ import courseRoutes from "./routes/courseRoutes.js";
 import userRoutes from "./routes/usersRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { SUCCESS, FAIL, ERROR } from "./utils/httpStatusText.js";
 import asyncWrapper from "./middlewares/asyncWrapper.js";
 import AppError from "./utils/appError.js";
@@ -30,6 +32,13 @@ app.use(express.json());
 
 // Enable CORS
 app.use(cors());
+
+// Get the directory name in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the "uploads" directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.get("/", (req, res) => {

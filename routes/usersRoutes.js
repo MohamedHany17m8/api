@@ -15,14 +15,15 @@ import {
 } from "../middlewares/validateUser.js";
 import verifyToken from "../utils/verifyToken.js";
 import allowedTo from "../utils/allowedTo.js";
+import upload from "../middlewares/upload.js";
 
 const router = express.Router();
 
 // Routes for /users
 router
   .route("/")
-  .get(verifyToken, getAllUsers)
-  .post(validateCreateUser, createUser);
+  .get(getAllUsers)
+  .post(upload.single("avatar"), validateCreateUser, createUser);
 
 // Routes for /users/:id
 router
